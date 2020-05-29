@@ -60,31 +60,21 @@ class Test(object):
         image = self.images[i]
         #NR, IE処理の追加
         #----------------------
-        image[:,:,2]=0
+        image[:,:,0]=0
         #print(label)
         if label == 0:
             image[:,:,1]=0
-            labels = [1,0,0,0] 
         elif label ==1:
             image[:,:,1]=50
-            labels = [0,1,0,0]
         elif label ==2:
             image[:,:,1]=100
-            labels = [0,0,1,0]
         elif label ==3:
             image[:,:,1]=150
-            labels = [0,0,0,1]
             
         out = Image.fromarray(np.uint8(out), mode='P')
-        out = out.resize((400,800),Image.BICUBIC)
-        out = out.convert('RGB')
+        out = out.resize((400,800),Image.BICUBIC).convert('RGB')
         out = np.asarray(out)
-        image = np.asarray(image)
         image = (image*(out*0.8))+(image*0.2)
-        image = Image.fromarray(np.uint8(image))
-        #image.save('1.jpg')
-        image = np.asarray(image)
-        image = cv.cvtColor(image, cv.COLOR_RGB2BGR)
         #-----------------------
         
         #以下変更なし

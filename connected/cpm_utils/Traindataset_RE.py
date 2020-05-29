@@ -55,7 +55,7 @@ class Train(object):
         
         #NR, IEの処理の追加
         #---------------
-        image[:,:,2]=0
+        image[:,:,0]=0
         #print(label)
         if label == 0:
             image[:,:,1]=0
@@ -67,15 +67,9 @@ class Train(object):
             image[:,:,1]=150 
         
         out = Image.fromarray(np.uint8(out), mode='P')
-        out = out.resize((400,800),Image.BICUBIC)
-        out = out.convert('RGB')
+        out = out.resize((400,800),Image.BICUBIC).convert('RGB')
         out = np.asarray(out)
-        image = np.asarray(image)
         image = (image*(out*0.8))+(image*0.2)
-        image = Image.fromarray(np.uint8(image))
-        #image.save('0.jpg')
-        image = np.asarray(image)
-        image = cv.cvtColor(image, cv.COLOR_RGB2BGR)
         #----------------
         
         #以下, 変更なし
