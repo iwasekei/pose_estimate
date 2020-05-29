@@ -9,8 +9,8 @@ from cpm_utils import loader_py as ld
 from cpm_utils import Traindataset_RE
 from cpm_utils import Testdataset_RE
 from cpm_utils import cmd_options
+from cpm_utils import log
 
-import log
 import sys
 import csv
 import os

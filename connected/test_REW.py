@@ -1,20 +1,10 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
-from model import convolutional_pose_machine_IE
+from model import convolutional_pose_machine_REW
 import torch
-#from chainer import Variable
-#from chainer import optimizers
 import torch.optim as optim
-#from chainer import cuda
 import torch.nn as nn
-#from chainer import serializers
-#from chainer import training
 from tqdm import tqdm
-from util import loader_py as ld
+from cpm_util import loader_py as ld
+from cpm_util import log
 from PIL import Image
 
 
@@ -25,10 +15,7 @@ import argparse
 import copy
 import cv2 as cv
 import numpy as np
-import Traindataset
-import Testdataset
 import matplotlib.pyplot as plt
-import log
 import sys
 import csv
 import os
@@ -113,17 +100,17 @@ if __name__ == '__main__' :
     args = get_arguments()
     
     #prepare model
-    unet_cpm = convolutional_pose_machine_IE.CPM_RW(args.n_point, args.n_stage)
+    model = convolutional_pose_machine_REW.CPM_RW(args.n_point, args.n_stage)
     gpus = (args.gpu,)
     device = torch.device(f"cuda:{min(gpus)}" if len(gpus) > 0 else 'cpu')
     if args.unet_init_model:
-        unet_cpm.load_state_dict(torch.load(args.unet_init_model, map_location=device), strict=False)
+        model.load_state_dict(torch.load(args.unet_init_model, map_location=device), strict=False)
     if args.cpm_init_model:
-        unet_cpm.load_state_dict(torch.load(args.cpm_init_model, map_location=device), strict=False)
+        model.load_state_dict(torch.load(args.cpm_init_model, map_location=device), strict=False)
     if args.vgg_init_model:
-        unet_cpm.load_state_dict(torch.load(args.vgg_init_model, map_location=device), strict=False)
-    unet_cpm.to(device)
-    unet_cpm.eval()
+        model.load_state_dict(torch.load(args.vgg_init_model, map_location=device), strict=False)
+    model.to(device)
+    model.eval()
             
     #prepare directory
     mse=np.array([0]*16)
@@ -168,7 +155,7 @@ if __name__ == '__main__' :
             img = img[np.newaxis,:,:,:]
             img = torch.from_numpy(np.transpose(np.array(img).astype(np.float32), (0,3,1,2)))
             img = img.to(device)
-            r_label = unet_cpm.predict_vgg(img)
+            r_label = model.predict_vgg(img)
             add_label = r_label.cpu().detach().clone().numpy()
             add_label = np.squeeze(np.argmax(add_label,axis=1))
             #add_label = np.squeeze(np.argmax(label,axis=0))
@@ -184,7 +171,7 @@ if __name__ == '__main__' :
             #teacher_torch = torch.from_numpy((np.transpose(np.array(teacher).astype(np.float32), (0,3,1,2))))
             #teacher_torch = teacher_torch.to(device)
             
-            h2 = unet_cpm.predict_unet(inputs_torch)
+            h2 = model.predict_unet(inputs_torch)
             #unet_val_loss = loss.to('cpu').data
             h2 = h2.cpu().detach().clone().numpy()
             out = (np.transpose(np.array(h2).astype(np.float32), (0,2,3,1)))
@@ -205,10 +192,7 @@ if __name__ == '__main__' :
                 image[:,:,1]=150
                 label = [0,0,0,1]
             #out = out * 255
-            out = Image.fromarray(np.uint8(out), mode = "P")
-            out = out.resize((400,800),Image.BICUBIC).convert('RGB')
-            #out = out.convert('RGB')
-            out = np.asarray(out)
+            out = cv.cvtColor(cv.resize(out.astype(np.uint8),(400,800),interpolation=cv.INTER_CUBIC),cv.COLOR_GRAY2RGB)
             image = (image*(out*0.8))+(image*0.2)
             #-------------------------------------
             #cv.imwrite(os.path.join("images",imagename),image)
@@ -236,7 +220,7 @@ if __name__ == '__main__' :
             #print(label)
 
             #start to demonstration
-            h = unet_cpm.predict_cpm(img, c_map, r_label)#
+            h = model.predict_cpm(img, c_map, r_label)#
             #h = h.to(device)
             h2 = h.cpu().detach().clone().numpy()
             h3 = h2[0]
