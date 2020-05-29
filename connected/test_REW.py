@@ -181,17 +181,12 @@ if __name__ == '__main__' :
             #print(label)
             if add_label == 0:
                 image[:,:,1]=0
-                label = [1,0,0,0]
             elif add_label ==1:
                 image[:,:,1]=50
-                label = [0,1,0,0]
             elif add_label ==2:
                 image[:,:,1]=100
-                label = [0,0,1,0]
             elif add_label ==3:
                 image[:,:,1]=150
-                label = [0,0,0,1]
-            #out = out * 255
             out = cv.cvtColor(cv.resize(out.astype(np.uint8),(400,800),interpolation=cv.INTER_CUBIC),cv.COLOR_GRAY2RGB)
             image = (image*(out*0.8))+(image*0.2)
             #-------------------------------------
