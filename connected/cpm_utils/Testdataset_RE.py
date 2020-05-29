@@ -71,9 +71,7 @@ class Test(object):
         elif label ==3:
             image[:,:,1]=150
             
-        out = Image.fromarray(np.uint8(out), mode='P')
-        out = out.resize((400,800),Image.BICUBIC).convert('RGB')
-        out = np.asarray(out)
+        out = cv.cvtColor(cv.resize(out.astype(np.uint8),(400,800),interpolation=cv.INTER_CUBIC),cv.COLOR_GRAY2RGB)
         image = (image*(out*0.8))+(image*0.2)
         #-----------------------
         
